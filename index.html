@@ -165,50 +165,85 @@ window.onload = function() {
 </head>
 <body>
 <div id="container"></div>
+
+<div id="tip">
+    选择线路:
+    <select name="line" id="line" onChange="changeLine()">
+        <option value ="0">17号线</option>
+		<option value ="1">99号模拟线</option>
+    </select>
+</div>
+
 <script type="text/javascript">
+	function changeLine() {
+		//alert(document.getElementById("line").value);
+		drawLine(document.getElementById("line").value);
+	}
 	//配置所需信息 S
 	var points=[
-		[118.8898305,31.9339589],
-		[118.8767475,31.9399419],
-		[118.8623767,31.9376076],
-		[118.8438419,31.9319188],
-		[118.8237397,31.9282144],
-		[118.7830847,31.8937448]
+		[
+			[118.8898305,31.9339589],
+			[118.8767475,31.9399419],
+			[118.8623767,31.9376076],
+			[118.8438419,31.9319188],
+			[118.8237397,31.9282144],
+			[118.7830847,31.8937448]
+		],//17号线
+		[
+			[118.8898305,31.9339589],
+			[118.8767475,31.9399419],
+			[118.8623767,31.9376076],
+			[118.8438419,31.9319188]
+		]//99号模拟线
 	];
+	
 	var labels=[
-		"始发站",
-		"第一经停站",
-		"第二经停站",
-		"第三经停站",
-		"第四经停站",
-		"终点站"
+		[
+			"始发站",
+			"第一经停站",
+			"第二经停站",
+			"第三经停站",
+			"第四经停站",
+			"终点站"
+		],//17号线
+		[
+			"始发站",
+			"第一经停站",
+			"第二经停站",
+			"终点站"
+		]//99号模拟线
 	];
 	//配置所需信息 E
-
 	
-    var map, route, marker;
-    //基本地图加载
-    map = new AMap.Map("container", {
-        resizeEnable: true
-    });
-    //绘制初始路径
-    var path = [];
-	for(i=0;i<points.length;i++) {
-		path.push(points[i]);
-		var marker = new AMap.Marker({
-			position: points[i]
+	
+	
+	function drawLine(line) { //line:线路值	
+		var map, route, marker;
+		//基本地图加载
+		map = new AMap.Map("container", {
+			resizeEnable: true
 		});
-		marker.setMap(map);
-		marker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
-			offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
-			content: labels[i]
+		//绘制初始路径
+		var path = [];
+		for(i=0;i<points[line].length;i++) {
+			path.push(points[line][i]);
+			var marker = new AMap.Marker({
+				position: points[line][i]
+			});
+			marker.setMap(map);
+			marker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
+				offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
+				content: labels[line][i]
+			});
+		}
+		
+		map.plugin("AMap.DragRoute", function() {
+			route = new AMap.DragRoute(map, path, AMap.DrivingPolicy.LEAST_FEE); //构造拖拽导航类
+			route.search(); //查询导航路径并开启拖拽导航
 		});
 	}
-	
-    map.plugin("AMap.DragRoute", function() {
-        route = new AMap.DragRoute(map, path, AMap.DrivingPolicy.LEAST_FEE); //构造拖拽导航类
-        route.search(); //查询导航路径并开启拖拽导航
-    });
+	drawLine(0);
+    
 </script>
 </body>
 </html>
