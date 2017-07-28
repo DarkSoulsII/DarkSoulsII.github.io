@@ -148,20 +148,25 @@ Zb.__load__=function(a){a(config,sc);Zb.__load__=null};try{if(window.localStorag
  * Date: 2015/10/29 14:04
  */
 window.onload = function() {
+	/*
+	//报错数据，暂未解明
 	map.plugin(["AMap.ToolBar"], function() {
 		map.addControl(new AMap.ToolBar());
 	});
+	*/
 	if(location.href.indexOf('&guide=1')!==-1){
 		map.setStatus({scrollWheel:false})
 	}
 }
+
+	
 </script>
 <html>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <title>17号班车</title>
+    <title>班车路线图</title>
 </head>
 <body>
 <div id="container"></div>
@@ -169,55 +174,111 @@ window.onload = function() {
 <div id="tip">
     选择线路:
     <select name="line" id="line" onChange="changeLine()">
-        <option value ="0">17号线</option>
-		<option value ="1">99号模拟线</option>
+        <option value ="1">1号线（晓庄起点）</option>
+		<option value ="2">2号线（锁金村起点）</option>
+		<option value ="3">3号线（旭日景城起点）</option>
+		<option value ="4">4号线（山西路起点）</option>
+		<option value ="5">5号线（双门楼起点）</option>
+		<option value ="6">6号线（新雅苑起点）</option>
+		<option value ="16">16号线（江宁客运站起点）</option>	
     </select>
+	<br/>版本:ver0.402
 </div>
 
-<script type="text/javascript">
+<script type="text/javascript">	
+	//AJAX返回数据，全局变量
+	var result;
+		
+	//点击选择框后执行的函数
 	function changeLine() {
-		//alert(document.getElementById("line").value);
-		drawLine(document.getElementById("line").value);
+		send(document.getElementById("line").value);
 	}
-	//配置所需信息 S
-	var points=[
-		[
-			[118.8898305,31.9339589],
-			[118.8767475,31.9399419],
-			[118.8623767,31.9376076],
-			[118.8438419,31.9319188],
-			[118.8237397,31.9282144],
-			[118.7830847,31.8937448]
-		],//17号线
-		[
-			[118.8898305,31.9339589],
-			[118.8767475,31.9399419],
-			[118.8623767,31.9376076],
-			[118.8438419,31.9319188]
-		]//99号模拟线
-	];
 	
-	var labels=[
-		[
-			"始发站",
-			"第一经停站",
-			"第二经停站",
-			"第三经停站",
-			"第四经停站",
-			"终点站"
-		],//17号线
-		[
-			"始发站",
-			"第一经停站",
-			"第二经停站",
-			"终点站"
-		]//99号模拟线
-	];
-	//配置所需信息 E
+	//AJAX部分 开始
+	function send(value) {
+	  CreateXMLHttpRequest();
+	  xmlhttp.onreadystatechange = callhandle;
+	  xmlhttp.open("GET","https://yuntuapi.amap.com/datamanage/data/list?key=18f9777a8d09c1379b6cbaf9816fae01&tableid=5979e87b305a2a4ed707e29c&sortrule=_sort:1&filter=line:" + value);
+	  //xmlhttp.open("POST", "https://yuntuapi.amap.com/datamanage/data/list", true);
+	  xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;");  //用POST的时候一定要有这句
+	  xmlhttp.send(); 
+	  //xmlhttp.send(value);
+	}
+
+	function CreateXMLHttpRequest() {
+	  if (window.ActiveXObject) {
+		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	  }
+	  else if (window.XMLHttpRequest) {
+		xmlhttp = new XMLHttpRequest();
+	  }
+	}
+
+	function callhandle() {
+	  if (xmlhttp.readyState == 4) {
+		if (xmlhttp.status == 200) {
+			var str=""+xmlhttp.responseText;
+			result=JSON.parse(str);								
+			drawLine();
+		}
+	  }
+	}
+	//AJAX部分 结束
 	
+	send(1); //test
+
 	
 	
-	function drawLine(line) { //line:线路值	
+	
+	
+	function drawLine() { //line:线路值	
+		line=0;
+		var map, route, marker;
+		//基本地图加载
+		map = new AMap.Map("container", {
+			resizeEnable: true
+		});
+				
+		//绘制初始路径
+		var path = [];
+		for(i=0;i<result.datas.length;i++) {			
+			var location=[];
+			var strs=result.datas[i]._location.split(",");
+			location[0]=parseFloat(strs[0]);
+			location[1]=parseFloat(strs[1]);				
+			path.push(location);
+			var marker = new AMap.Marker({
+				position: location
+			});
+			marker.setMap(map);
+			marker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
+				offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
+				content: result.datas[i]._name
+			});
+		}
+		
+		//增加终点 S
+		var endPoint=[118.783028,31.893421];
+		var endName="江宁园区"
+		path.push(endPoint); 
+		var marker = new AMap.Marker({
+			position: endPoint
+		});
+		marker.setMap(map);
+		marker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
+			offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
+			content: endName
+		});
+		//增加终点 E
+		
+		map.plugin("AMap.DragRoute", function() {
+			route = new AMap.DragRoute(map, path, AMap.DrivingPolicy.LEAST_FEE); //构造拖拽导航类
+			route.search(); //查询导航路径并开启拖拽导航
+		});
+	}
+	/*
+	function drawLine() { 
+	
 		var map, route, marker;
 		//基本地图加载
 		map = new AMap.Map("container", {
@@ -225,15 +286,17 @@ window.onload = function() {
 		});
 		//绘制初始路径
 		var path = [];
-		for(i=0;i<points[line].length;i++) {
-			path.push(points[line][i]);
+		
+		for(i=0;i<result.datas.length;i++) {
+			path.push(result.datas[i]._location+"");
+			
 			var marker = new AMap.Marker({
-				position: points[line][i]
+				position: (result.datas[i]._location+"")
 			});
 			marker.setMap(map);
 			marker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
 				offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
-				content: labels[line][i]
+				content: result.datas[i]._name
 			});
 		}
 		
@@ -242,8 +305,8 @@ window.onload = function() {
 			route.search(); //查询导航路径并开启拖拽导航
 		});
 	}
-	drawLine(0);
-    
+	*/
+	
 </script>
 </body>
 </html>
