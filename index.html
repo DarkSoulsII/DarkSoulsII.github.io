@@ -174,15 +174,26 @@ window.onload = function() {
 <div id="tip">
     选择线路:
     <select name="line" id="line" onChange="changeLine()">
-        <option value ="1">1号线（晓庄起点）</option>
-		<option value ="2">2号线（锁金村起点）</option>
-		<option value ="3">3号线（旭日景城起点）</option>
-		<option value ="4">4号线（山西路起点）</option>
-		<option value ="5">5号线（双门楼起点）</option>
-		<option value ="6">6号线（新雅苑起点）</option>
-		<option value ="16">16号线（江宁客运站起点）</option>	
+        <option value ="1">1号线（浦口科技园起点）</option>
+		<option value ="2">2号线（明发滨江新城起点）</option>
+		<option value ="3">3号线（浦口桥北公交车站起点）</option>
+		<option value ="4">4号线（晓庄起点）</option>
+		<option value ="5">5号线（锁金村起点）</option>
+		<option value ="6">6号线（旭日景城起点）</option>
+		<option value ="7">7号线（山西路起点）</option>
+		<option value ="8">8号线（双门楼起点）</option>
+		<option value ="9">9号线（三汊河起点）</option>
+		<option value ="10">10号线（汉中门起点）</option>
+		<option value ="11">11号线（黑龙江路起点）</option>
+		<option value ="12">12号线（福建路新门口起点）</option>
+		<option value ="13">13、14号线（南瑞路起点）</option>
+		<option value ="15">15号线（金盛起点）</option>
+		<option value ="16">16号线（龙眠大道江苏经贸学院地铁口起点）</option>
+		<option value ="17">17号线（竹山路地铁口起点）</option>
+		<option value ="18">18号线（文靖新村起点）</option>
+		<option value ="19">19号线（江宁客运站起点）</option>		
     </select>
-	<br/>版本:ver0.402
+	<br/>版本:ver0.403
 </div>
 
 <script type="text/javascript">	
@@ -225,18 +236,16 @@ window.onload = function() {
 	}
 	//AJAX部分 结束
 	
-	send(1); //test
+	send(15); //默认值15
 
-	
-	
-	
-	
 	function drawLine() { //line:线路值	
 		line=0;
 		var map, route, marker;
 		//基本地图加载
-		map = new AMap.Map("container", {
-			resizeEnable: true
+		map = new AMap.Map('container', {
+			resizeEnable: true,
+			zoom:11,
+			center: [118.779799, 32.017272]        
 		});
 				
 		//绘制初始路径
@@ -276,36 +285,6 @@ window.onload = function() {
 			route.search(); //查询导航路径并开启拖拽导航
 		});
 	}
-	/*
-	function drawLine() { 
-	
-		var map, route, marker;
-		//基本地图加载
-		map = new AMap.Map("container", {
-			resizeEnable: true
-		});
-		//绘制初始路径
-		var path = [];
-		
-		for(i=0;i<result.datas.length;i++) {
-			path.push(result.datas[i]._location+"");
-			
-			var marker = new AMap.Marker({
-				position: (result.datas[i]._location+"")
-			});
-			marker.setMap(map);
-			marker.setLabel({//label默认蓝框白底左上角显示，样式className为：amap-marker-label
-				offset: new AMap.Pixel(20, 20),//修改label相对于maker的位置
-				content: result.datas[i]._name
-			});
-		}
-		
-		map.plugin("AMap.DragRoute", function() {
-			route = new AMap.DragRoute(map, path, AMap.DrivingPolicy.LEAST_FEE); //构造拖拽导航类
-			route.search(); //查询导航路径并开启拖拽导航
-		});
-	}
-	*/
 	
 </script>
 </body>
